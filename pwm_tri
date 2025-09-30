@@ -1,0 +1,61 @@
+#define LED_PIN 7
+
+// PWM 제어를 위한 전역 변수
+unsigned int g_period_us = 100; // 현재 주기 (단위: us) 양수의 값만 사용하기 때문에 unsigned로 선언. 10ms, 1ms ,0.1ms
+                                  // 10000, 1000, 100
+int g_duty_percent = 0;          // 현재 듀티 사이클 (단위: %)
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+}
+
+void loop() {
+  // 1초 동안 밝기를 최소-최대-최소 패턴으로 변경
+  // 총 200단계의 변화 (상승 101, 하강 99) -> 1단계당 약 5ms 소요
+  long delay_per_step_ms = 5;
+
+  // 밝기 증가 (0% -> 100%) 증감 연산 사용 
+  for (int duty = 0; duty <= 100; duty++) {
+    set_duty(duty);
+    run_pwm_for_duration(delay_per_step_ms);
+  }
+
+  // 밝기 감소 (100% -> 0%) 증감 연산 사용 
+  for (int duty = 100; duty >= 0; duty--) {
+    set_duty(duty);
+    run_pwm_for_duration(delay_per_step_ms);
+  }
+}
+
+// PWM 주기를 설정하는 함수 10ms ~ 0.1ms
+void set_period(unsigned int period_us) {
+  if (period_us >= 100 && period_us <= 10000) {
+    g_period_us = period_us;
+  }
+}
+
+// PWM 듀티 사이클을 설정하는 함수 duty 30 = 30%만 키고 나머지 70%는 꺼져있는 시간.
+void set_duty(int duty_percent) {
+  if (duty_percent >= 0 && duty_percent <= 100) {
+    g_duty_percent = duty_percent;
+  }
+}
+
+// 주어진 시간(ms) 동안 현재 설정된 PWM 신호를 출력하는 함수
+void run_pwm_for_duration(unsigned long duration_ms) {   // millis()는 아두이노 보드가 켜진 후 흐른 시간을 밀리초로 알려준다.
+  unsigned long start_time_ms = millis();                // 따라서 millis()함수의 반환 타입과 맞추기 위해 unsigned long 선언.
+  while (millis() - start_time_ms < duration_ms) {
+    // 듀티 사이클에 따라 ON/OFF 시간 계산
+    unsigned long on_time_us = g_period_us * (g_duty_percent / 100.0);
+    unsigned long off_time_us = g_period_us - on_time_us;
+
+    if (on_time_us > 0) { // ex) duty 70% 구현 = 70 > 0 이므로 참 
+      digitalWrite(LED_PIN, HIGH); // Led를 킨다 
+      delayMicroseconds(on_time_us); // 한 주기(period)의 70% 동안 켠 상태를 유지한다. 
+    }
+    if (off_time_us > 0) { // ex) duty 70% 시 나머지 30%는 꺼져야함. 30 > 0 이므로 참 
+      digitalWrite(LED_PIN, LOW); // Led를 끈다 
+      delayMicroseconds(off_time_us); // 한 주기(period)의 30% 동안 끈 상태를 유지한다. 
+    }
+  }
+}
