@@ -1,10 +1,8 @@
 #include <Servo.h>
-#include <math.h>  // exp() 함수 사용을 위해 필요
 
-// 핀 설정
 #define PIN_SERVO 10
 #define PIN_TRIG 12
-#define PIN_DECHO 13
+#define PIN_ECHO 13
 
 Servo myservo;
 
