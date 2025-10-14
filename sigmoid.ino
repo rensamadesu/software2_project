@@ -62,7 +62,7 @@ void loop() {
 
   // 차량 감지 && 닫혀 있으면 열기
   if (distance > 0 && distance <= 10 && !isOpen) {
-    openTime = millis();    // 먼저 시간 기록!
+    openTime = millis();    // 먼저 시간 기록
     smoothOpen();           // 부드럽게 열기
     isOpen = true;
   }
